@@ -1,0 +1,42 @@
+<ion-view>
+  <ion-side-menus>
+    <!-- Left menu -->
+    <ion-side-menu side="left">
+      <ion-list>
+        <ion-item menu-close>
+          Add new note
+        </ion-item>
+        <ion-item menu-close href="#/app/search">
+          Change password
+        </ion-item>
+        <ion-item menu-close href="#/login">
+          Logout
+        </ion-item>
+        <ion-item menu-close>
+          Delete account
+        </ion-item>
+      </ion-list>
+    </ion-side-menu>
+
+    <ion-side-menu-content>
+      <ion-header-bar align-title="left" class="bar-stable">
+        <h1 class="title">Notepad App</h1>
+      </ion-header-bar>
+      <ion-content>
+        <div class="card">
+          <div class="item item-divider" contenteditable="true" ngClick="setEditable()">
+            <div ng-if="!isEditable">
+              {{title}}
+            </div>
+            <form novalidate="true" ng-if="isEditable">
+              <input type="text" ng-model="title">
+            </form>
+          </div>
+          <div class="item item-text-wrap">
+            Note content
+          </div>
+        </div>
+      </ion-content>
+    </ion-side-menu-content>
+  </ion-side-menus>
+</ion-view>
