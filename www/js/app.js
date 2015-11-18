@@ -7,6 +7,8 @@ angular.module('notepadApp', ['ionic', 'ngCordova'])
 
 .config(function($stateProvider, $urlRouterProvider){
 
+  //$scope.serverAdress = "https://localhost:8443";
+
   $stateProvider
 
   .state('login', {
@@ -18,7 +20,7 @@ angular.module('notepadApp', ['ionic', 'ngCordova'])
     url: '/notes',
     templateUrl: 'notes.html',
     controller: 'NotesController'
-  })
+  });
 
   $urlRouterProvider.otherwise('/login');
 
@@ -40,19 +42,49 @@ angular.module('notepadApp', ['ionic', 'ngCordova'])
 .controller('NotesController', function($scope){
   $scope.title = 'note title';
   $scope.isEditable = true;
-  $scope.setEditable() = function() {
-    $scope.isEditable = !$scope.isEd;
-  }
+  $scope.setEditable = function() {
+    $scope.isEditable = !$scope.isEditable;
+  };
 })
 
-.controller('LoginController', function($state, $scope, $cordovaFacebook, $cordovaGooglePlus, $ionicLoading){
+.controller('LoginController', function($state, $http, $scope, $rootScope, $cordovaFacebook, $cordovaGooglePlus, $ionicLoading, $cordovaToast){
   /*
    * Learn how facebooks graph api works: https://developers.facebook.com/docs/graph-api/quickstart/v2.2
    * The array params "public_profile", "email", "user_friends" are the permissions / data that the app is trying to access.
   */
+
+  $scope.user = { loginField: "Login", password: "pwd"};
+
+  $scope.showToast = function(message, duration, location) {
+        $cordovaToast.show(message, duration, location).then(function(success) {
+            console.log("The toast was shown");
+        }, function (error) {
+            console.log("The toast was not shown due to " + error);
+        });
+    };
+
   $scope.login = function() {
-        $state.go('notes');
+    var user = $scope.user;
+    var registerUrl = "https://localhost:8443" + "/login?login=" + user.loginField + "&password=" + user.password;
+    $http({ method: 'GET', url: registerUrl }).success(function (response){
+           $state.go('notes');
+       }).error(function (data, status, response){
+           //if(status == 406){
+              $scope.showToast('Login failed', 'long', 'top');
+           //}
+       });
+
       };
+
+ $scope.register = function(){
+   var user = $scope.user;
+   var registerUrl = "https://localhost:8443" + "/register?login=" + user.loginField + "&password=" + user.password;
+   $http({ method: 'GET', url: registerUrl }).success(function (response){
+          alert("Success");
+      }).error(function (data, status, response){
+          alert("Fail");
+      });
+ };
 
   $scope.fbLogin = function(){
 
@@ -75,14 +107,14 @@ angular.module('notepadApp', ['ionic', 'ngCordova'])
           id: result.id,
           name: result.name,
           pic: result.picture.data.url
-        }
+        };
         //Do what you wish to do with user data. Here we are just displaying it in the view
         $scope.fbData = JSON.stringify(userData, null, 4);
 
 
       }, function(error){
         // Error message
-      })
+      });
 
     }, function (error) {
       // Facebook returns error message due to which login was cancelled.
@@ -90,7 +122,7 @@ angular.module('notepadApp', ['ionic', 'ngCordova'])
       // For example, show the error message inside a toast notification on Android
     });
 
-  }
+  };
 
   /*
    * Google login
@@ -117,5 +149,5 @@ angular.module('notepadApp', ['ionic', 'ngCordova'])
       $ionicLoading.hide();
 
     });
-  }
-})
+  };
+});
