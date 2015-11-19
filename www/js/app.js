@@ -103,10 +103,8 @@ angular.module('notepadApp', ['ionic', 'ngCordova', 'ngResource'])
         $scope.note = $resource('https://46.101.191.174:8443/' + userId + '/notes/' + id, null, {
           'update': {method:'PUT'}
         }).update(note);
-        $ionicHistory.clearCache();
         $state.go('notes', {}, {reload: true});
     }else{
-        $ionicHistory.clearCache();
         $resource('https://46.101.191.174:8443/' + userId + '/notes/').save(note);
         $state.go('notes', {}, {reload: true});
     }
@@ -136,13 +134,28 @@ angular.module('notepadApp', ['ionic', 'ngCordova', 'ngResource'])
       $scope.showToast('Login successful', 'short', 'bottom');
     }).error(function (data, status, response){
       console.log(response);
-      $scope.showToast('Login failed', 'short', 'bottom');
+      if(status === 0){
+          $scope.showToast('Connection failed', 'short', 'bottom');
+      }else if(status == 406){
+          $scope.showToast('Login failed', 'short', 'bottom');
+      }
     });
 
   };
 
   $scope.register = function(){
     var user = $scope.user;
+
+    if(user.loginField.length < 5){
+      $scope.showToast('Login must have more than 5 characters', 'short', 'bottom');
+      return;
+    }
+
+    if(user.password.length < 6){
+      $scope.showToast('Password must have more than 5 characters', 'short', 'bottom');
+      return;
+    }
+
     var registerUrl = "https://46.101.191.174:8443" + "/register?login=" + user.loginField + "&password=" + user.password;
     $http({ method: 'GET', url: registerUrl }).success(function (response){
       var id = response.userId;
@@ -151,7 +164,12 @@ angular.module('notepadApp', ['ionic', 'ngCordova', 'ngResource'])
       $state.go('notes', {}, {reload: true});
       $scope.showToast('Registered new user', 'short', 'bottom');
     }).error(function (data, status, response){
-      $scope.showToast('Register failed', 'short', 'bottom');
+      console.log(response);
+      if(status === 0){
+          $scope.showToast('Connection failed', 'short', 'bottom');
+      }else if(status == 406){
+          $scope.showToast('Register failed', 'short', 'bottom');
+      }
     });
   };
 }
