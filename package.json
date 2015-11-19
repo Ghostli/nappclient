@@ -1,7 +1,7 @@
 {
-  "name": "ionic-oauth",
+  "name": "notepadapp",
   "version": "1.0.0",
-  "description": "ionic-oauth: An Ionic project",
+  "description": "A simple notepad application",
   "dependencies": {
     "gulp": "^3.5.6",
     "gulp-sass": "^0.7.1",
@@ -14,8 +14,11 @@
     "gulp-util": "^2.2.14",
     "shelljs": "^0.3.0"
   },
-  "cordovaPlugins": [],
-  "cordovaPlatforms": [
-    "android"
-  ]
+  "cordovaPlugins": [
+    {
+      "locator": "https://github.com/apache/cordova-plugin-whitelist.git",
+      "id": "cordova-plugin-whitelist"
+    }
+  ],
+  "cordovaPlatforms": []
 }

@@ -3,7 +3,19 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-angular.module('notepadApp', ['ionic', 'ngCordova'])
+angular.module('notepadApp', ['ionic', 'ngCordova', 'ngResource'])
+.service('Variables', function($q) {
+  var userId = -1;
+  var serverAdress = 'https://46.101.191.174:8443/';
+  return {
+    getUserId: function() {
+      return this.userId;
+    },
+    setUserId: function(id){
+      this.userId = id;
+    }
+  };
+})
 
 .config(function($stateProvider, $urlRouterProvider){
 
@@ -18,8 +30,12 @@ angular.module('notepadApp', ['ionic', 'ngCordova'])
   })
   .state('notes', {
     url: '/notes',
-    templateUrl: 'notes.html',
-    controller: 'NotesController'
+    templateUrl: 'noteList.html',
+    controller: 'NoteListController'
+  }).state('note', {
+    url: '/note/{id}',
+    templateUrl: 'note.html',
+    controller: 'NoteController'
   });
 
   $urlRouterProvider.otherwise('/login');
@@ -39,115 +55,106 @@ angular.module('notepadApp', ['ionic', 'ngCordova'])
   });
 })
 
-.controller('NotesController', function($scope){
-  $scope.title = 'note title';
-  $scope.isEditable = true;
-  $scope.setEditable = function() {
-    $scope.isEditable = !$scope.isEditable;
+.controller('NoteListController', function($scope, $state, $ionicHistory, $resource, Variables){
+
+  $scope.data = {
+    showDelete: false
+  };
+
+  $scope.onItemDelete = function(note) {
+    $resource('https://46.101.191.174:8443/' + Variables.getUserId(1) + '/notes/' + note.id).delete();
+    $scope.notes.splice($scope.notes.indexOf(note), 1);
+  };
+
+  $scope.loadNotes = function(){
+    var userId = Variables.getUserId();
+    if(userId !== undefined){
+        $scope.notes = $resource('https://46.101.191.174:8443/' + userId + '/notes/').query();
+      }
+  };
+
+  $scope.addNewNote = function(){
+    $state.go('note');
+  };
+
+  $scope.logout = function() {
+    $ionicHistory.clearCache();
+    Variables.setUserId(-1);
+    $state.go('login', {}, {reload: true});
+  };
+
+  $scope.loadNotes();
+})
+
+.controller('NoteController', function($scope, $state, $ionicHistory, $resource, $stateParams, Variables){
+  var id = $stateParams.id;
+  if(id !== ""){
+    var userId = Variables.getUserId();
+    $scope.note = $resource('https://46.101.191.174:8443/' + userId + '/notes/' + id).get();
+  }else{
+    $scope.note = {};
+  }
+
+
+  $scope.saveNote = function() {
+    var note = $scope.note;
+    var userId = Variables.getUserId();
+    if(note.id !== undefined){
+        $scope.note = $resource('https://46.101.191.174:8443/' + userId + '/notes/' + id, null, {
+          'update': {method:'PUT'}
+        }).update(note);
+        $ionicHistory.clearCache();
+        $state.go('notes', {}, {reload: true});
+    }else{
+        $ionicHistory.clearCache();
+        $resource('https://46.101.191.174:8443/' + userId + '/notes/').save(note);
+        $state.go('notes', {}, {reload: true});
+    }
   };
 })
 
-.controller('LoginController', function($state, $http, $scope, $rootScope, $cordovaFacebook, $cordovaGooglePlus, $ionicLoading, $cordovaToast){
-  /*
-   * Learn how facebooks graph api works: https://developers.facebook.com/docs/graph-api/quickstart/v2.2
-   * The array params "public_profile", "email", "user_friends" are the permissions / data that the app is trying to access.
-  */
+.controller('LoginController', function($state, $http, $scope, $rootScope, $ionicHistory, $ionicLoading, $cordovaToast, Variables){
 
-  $scope.user = { loginField: "Login", password: "pwd"};
+  $scope.user = { };
 
   $scope.showToast = function(message, duration, location) {
-        $cordovaToast.show(message, duration, location).then(function(success) {
-            console.log("The toast was shown");
-        }, function (error) {
-            console.log("The toast was not shown due to " + error);
-        });
-    };
+    $cordovaToast.show(message, duration, location).then(function(success) {
+      console.log("The toast was shown");
+    }, function (error) {
+      console.log("The toast was not shown due to " + error);
+    });
+  };
 
   $scope.login = function() {
     var user = $scope.user;
-    var registerUrl = "https://localhost:8443" + "/login?login=" + user.loginField + "&password=" + user.password;
+    var registerUrl = "https://46.101.191.174:8443" + "/login?login=" + user.loginField + "&password=" + user.password;
     $http({ method: 'GET', url: registerUrl }).success(function (response){
-           $state.go('notes');
-       }).error(function (data, status, response){
-           //if(status == 406){
-              $scope.showToast('Login failed', 'long', 'top');
-           //}
-       });
-
-      };
-
- $scope.register = function(){
-   var user = $scope.user;
-   var registerUrl = "https://localhost:8443" + "/register?login=" + user.loginField + "&password=" + user.password;
-   $http({ method: 'GET', url: registerUrl }).success(function (response){
-          alert("Success");
-      }).error(function (data, status, response){
-          alert("Fail");
-      });
- };
-
-  $scope.fbLogin = function(){
-
-    $cordovaFacebook.login(["public_profile", "email", "user_friends"])
-    .then(function(success) {
-      /*
-       * Get user data here.
-       * For more, explore the graph api explorer here: https://developers.facebook.com/tools/explorer/
-       * "me" refers to the user who logged in. Dont confuse it as some hardcoded string variable.
-       *
-      */
-      //To know more available fields go to https://developers.facebook.com/tools/explorer/
-      $cordovaFacebook.api("me?fields=id,name,picture", [])
-      .then(function(result){
-        /*
-         * As an example, we are fetching the user id, user name, and the users profile picture
-         * and assiging it to an object and then we are logging the response.
-        */
-        var userData = {
-          id: result.id,
-          name: result.name,
-          pic: result.picture.data.url
-        };
-        //Do what you wish to do with user data. Here we are just displaying it in the view
-        $scope.fbData = JSON.stringify(userData, null, 4);
-
-
-      }, function(error){
-        // Error message
-      });
-
-    }, function (error) {
-      // Facebook returns error message due to which login was cancelled.
-      // Depending on your platform show the message inside the appropriate UI widget
-      // For example, show the error message inside a toast notification on Android
+      var id = response.userId;
+      Variables.setUserId(id);
+      $ionicHistory.clearCache();
+      $state.go('notes', {}, {reload: true});
+      $scope.showToast('Login successful', 'short', 'bottom');
+    }).error(function (data, status, response){
+      console.log(response);
+      $scope.showToast('Login failed', 'short', 'bottom');
     });
 
   };
 
-  /*
-   * Google login
-  */
-
-  $scope.googleLogin = function(){
-
-    $ionicLoading.show({template: 'Loading...'});
-    /*
-     * Google login. This requires an API key if the platform is "IOS".
-     * Example: $cordovaGooglePlus.login('yourApiKey')
-    */
-    $cordovaGooglePlus.login()
-    .then(function(data){
-
-      $scope.googleData = JSON.stringify(data, null, 4);
-      $ionicLoading.hide();
-
-    }, function(error){
-
-      // Google returns error message due to which login was cancelled.
-      // Depending on your platform show the message inside the appropriate UI widget
-      // For example, show the error message inside a toast notification on Android
-      $ionicLoading.hide();
-
+  $scope.register = function(){
+    var user = $scope.user;
+    var registerUrl = "https://46.101.191.174:8443" + "/register?login=" + user.loginField + "&password=" + user.password;
+    $http({ method: 'GET', url: registerUrl }).success(function (response){
+      var id = response.userId;
+      Variables.setUserId(id);
+      $ionicHistory.clearCache();
+      $state.go('notes', {}, {reload: true});
+      $scope.showToast('Registered new user', 'short', 'bottom');
+    }).error(function (data, status, response){
+      $scope.showToast('Register failed', 'short', 'bottom');
     });
   };
-});
+}
+
+
+);
