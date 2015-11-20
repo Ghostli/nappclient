@@ -4,13 +4,13 @@
     <ion-side-menu side="left">
       <ion-list>
         <ion-item menu-close ng-click="addNewNote()">
-          Add new note
+          Dodaj notatkę
         </ion-item>
         <ion-item menu-close ng-click="logout()">
-          Logout
+          Wyloguj
         </ion-item>
         <ion-item menu-close ng-click="deleteAccount()">
-          Delete account
+          Usuń konto
         </ion-item>
       </ion-list>
     </ion-side-menu>
@@ -18,10 +18,14 @@
     <ion-side-menu-content>
       <ion-header-bar class="bar-positive">
       <div class="buttons">
+        <button class="button button-icon icon ion-navicon-round"
+          ng-click="toggleSideMenu()"></button>
+      </div>
+      <h1 class="title">Notepad App</h1>
+      <div class="buttons">
         <button class="button button-icon icon ion-ios-minus-outline"
           ng-click="data.showDelete = !data.showDelete;"></button>
       </div>
-      <h1 class="title">Notepad App</h1>
     </ion-header-bar>
       <ion-content>
         <ion-list show-delete="data.showDelete">
