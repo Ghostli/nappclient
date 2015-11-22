@@ -45,7 +45,7 @@ angular.module('notepadApp').controller('LoginController', function($state, $htt
       Notification.show('Zarejestrowano');
     }).error(function (data, status, response){
       if(status === 0){
-          Notification.show('Błąd połącenia');
+          Notification.show('Błąd połączenia');
       }else if(status == 406){
           Notification.show('Błąd rejestracji');
       }
