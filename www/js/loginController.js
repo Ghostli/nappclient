@@ -1,5 +1,5 @@
 
-angular.module('notepadApp').controller('LoginController', function($state, $http, $scope, $rootScope, $ionicHistory, $ionicLoading, $cordovaToast, Variables){
+angular.module('notepadApp').controller('LoginController', function($state, $http, $scope, $rootScope, $ionicHistory, $ionicLoading, $cordovaToast, Variables, Notification){
 
   $scope.user = { };
 
@@ -10,12 +10,12 @@ angular.module('notepadApp').controller('LoginController', function($state, $htt
       var id = response.userId;
       Variables.setUserId(id);
       $state.go('notes', {}, {reload: true});
-      alert('Zalogowano');
+      Notification.show('Zalogowano');
     }).error(function (data, status, response){
       if(status === 0){
-          alert('Błąd połączenia');
+          Notification.show('Błąd połączenia');
       }else if(status == 406){
-          alert('Błąd logowania');
+          Notification.show('Błąd logowania');
       }
     });
   };
@@ -24,34 +24,30 @@ angular.module('notepadApp').controller('LoginController', function($state, $htt
     var user = $scope.user;
 
     if(user.loginField === undefined || user.password === undefined){
-      alert('Wypełnij wszystkie pola');
+      Notification.show('Wypełnij wszystkie pola');
       return;
     }
 
     if(user.loginField.length < 5){
-      //$scope.showToast('Login musi mieć ponad 5 znaków', 'short', 'bottom');
-      alert('Login musi mieć ponad 6 znaków');
+      Notification.show('Login musi mieć ponad 6 znaków');
       return;
     }
 
     if(user.password.length < 6){
-      //$scope.showToast('Hasło musi mieć ponad 6 znaków', 'short', 'bottom');
-      alert('Hasło musi mieć ponad 6 znaków');
+      Notification.show('Hasło musi mieć ponad 6 znaków');
       return;
     }
 
     var registerUrl = "https://46.101.191.174:8443" + "/register?login=" + user.loginField + "&password=" + user.password;
     $http({ method: 'GET', url: registerUrl }).success(function (response){
-      var id = response.userId;
-      Variables.setUserId(id);
+      Variables.setUserId(response.userId);
       $state.go('notes', {}, {reload: true});
-      $scope.showToast('Zarejestrowano', 'short', 'bottom');
+      Notification.show('Zarejestrowano');
     }).error(function (data, status, response){
-      console.log(response);
       if(status === 0){
-          alert('Błąd połącenia');
+          Notification.show('Błąd połącenia');
       }else if(status == 406){
-          alert('Błąd rejestracji');
+          Notification.show('Błąd rejestracji');
       }
     });
   };

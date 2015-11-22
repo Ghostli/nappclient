@@ -28,6 +28,10 @@
       </div>
     </ion-header-bar>
       <ion-content>
+        <!-- <ion-refresher
+          pulling-text="Przeciągnij aby odświeżyć..."
+          on-refresh="loadNotes()">
+        </ion-refresher> -->
         <ion-list show-delete="data.showDelete">
         <ion-item ng-repeat="note in notes" item="note" href="#/note/{{note.id}}" class="item-remove-animate">
           <h2>{{note.title}}</h2>

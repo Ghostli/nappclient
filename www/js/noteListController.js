@@ -1,12 +1,12 @@
 
-angular.module('notepadApp').controller('NoteListController', function($scope, $ionicPopup, $state, $ionicHistory, $resource, $ionicSideMenuDelegate, Variables, Notification){
+angular.module('notepadApp').controller('NoteListController', function($scope, $http, $ionicPopup, $state, $ionicHistory, $resource, $ionicSideMenuDelegate, Variables, Notification){
 
   $scope.data = {
     showDelete: false
   };
 
   $scope.$on('reloadNotes', function() {
-      $scope.loadNotes();
+    $scope.loadNotes();
   });
 
   $scope.onItemDelete = function(note) {
@@ -17,8 +17,8 @@ angular.module('notepadApp').controller('NoteListController', function($scope, $
   $scope.loadNotes = function(){
     var userId = Variables.getUserId();
     if(userId !== undefined){
-        $scope.notes = $resource('https://46.101.191.174:8443/' + userId + '/notes/').query();
-      }
+      $scope.notes = $resource('https://46.101.191.174:8443/' + userId + '/notes/').query();
+    }
   };
 
   $scope.toggleSideMenu = function(){
@@ -42,11 +42,18 @@ angular.module('notepadApp').controller('NoteListController', function($scope, $
     });
     confirmPopup.then(function(res) {
       if(res) {
-        // delete user account
-        $state.go('login');
-        Notification.show("Usunięto konto");
-      } else {
-
+        var userId = Variables.getUserId();
+        var registerUrl = "https://46.101.191.174:8443" + "/unregister?userId=" + userId;
+        $http({ method: 'POST', url: registerUrl }).success(function (response){
+          $state.go('login');
+          Notification.show("Usunięto konto");
+        }).error(function (data, status, response){
+          if(status === 0){
+            Notification.show('Błąd połącenia');
+          }else if(status == 406){
+            Notification.show('Błąd usuwania konta');
+          }
+        });
       }
     });
   };
