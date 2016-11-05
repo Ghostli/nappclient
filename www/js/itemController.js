@@ -3,8 +3,7 @@ angular.module('notepadApp').controller('NoteController', function($scope, $stat
 
   var id = $stateParams.id;
   if(id !== ""){
-    var userId = Variables.getUserId();
-    $scope.note = $resource('https://46.101.191.174:8443/' + userId + '/notes/' + id).get();
+    $scope.note = $resource(Variables.serverAddress + userId + '/notes/' + id).get();
   }else{
     $scope.note = {};
   }

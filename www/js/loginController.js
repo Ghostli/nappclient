@@ -5,13 +5,14 @@ angular.module('notepadApp').controller('LoginController', function($state, $htt
 
   $scope.login = function() {
     var user = $scope.user;
-    var registerUrl = "https://46.101.191.174:8443" + "/login?login=" + user.loginField + "&password=" + user.password;
-    $http({ method: 'GET', url: registerUrl }).success(function (response){
-      var id = response.userId;
-      Variables.setUserId(id);
-      $state.go('notes', {}, {reload: true});
+    var loginUrl = Variables.serverAddress + "login";
+
+    $http({ method: 'POST', url: loginUrl, data: { email: user.loginField, password: user.password} }).success(function (response){
+      sessionStorage.setItem("token", response.token);
+      sessionStorage.setItem("userId", response.userId);
       Notification.show('Zalogowano');
-    }).error(function (data, status, response){
+      $state.go("itemList")
+    }).error(function (data, status){
       if(status === 0){
           Notification.show('Błąd połączenia');
       }else if(status == 406){
@@ -38,11 +39,10 @@ angular.module('notepadApp').controller('LoginController', function($state, $htt
       return;
     }
 
-    var registerUrl = "https://46.101.191.174:8443" + "/register?login=" + user.loginField + "&password=" + user.password;
-    $http({ method: 'GET', url: registerUrl }).success(function (response){
-      Variables.setUserId(response.userId);
-      $state.go('notes', {}, {reload: true});
-      Notification.show('Zarejestrowano');
+    var registerUrl = Variables.serverAddress + "register"
+    $http({ method: 'POST', url: registerUrl, data: { email: user.loginField, password: user.password} }).success(function (response){
+      console.log(response.message)
+      Notification.show(response.message);
     }).error(function (data, status, response){
       if(status === 0){
           Notification.show('Błąd połączenia');

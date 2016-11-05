@@ -3,14 +3,14 @@
     <!-- Left menu -->
     <ion-side-menu side="left">
       <ion-list>
-        <ion-item menu-close ng-click="addNewNote()">
-          Dodaj notatkę
+        <ion-item menu-close ng-click="addNewItem()">
+          New item
         </ion-item>
         <ion-item menu-close ng-click="logout()">
-          Wyloguj
+          Logout
         </ion-item>
         <ion-item menu-close ng-click="deleteAccount()">
-          Usuń konto
+          Delete account
         </ion-item>
       </ion-list>
     </ion-side-menu>
@@ -33,9 +33,9 @@
           on-refresh="loadNotes()">
         </ion-refresher> -->
         <ion-list show-delete="data.showDelete">
-        <ion-item ng-repeat="note in notes" item="note" href="#/note/{{note.id}}" class="item-remove-animate">
-          <h2>{{note.title}}</h2>
-          <p>{{note.content}}</h2>
+        <ion-item ng-repeat="item in items" item="item" href="#/note/{{item.id}}" class="item-remove-animate">
+          <h2>{{item.title}}</h2>
+          <p>{{item.amount}}</p>
           <ion-delete-button class="ion-minus-circled" ng-click="onItemDelete(note)"/>
         </ion-item>
       </ion-list>

@@ -1,5 +1,5 @@
 
-angular.module('notepadApp').controller('NoteListController', function($scope, $http, $ionicPopup, $state, $ionicHistory, $resource, $ionicSideMenuDelegate, Variables, Notification){
+angular.module('notepadApp').controller('ItemListController', function($scope, $http, $ionicPopup, $state, $ionicHistory, $resource, $ionicSideMenuDelegate, Variables, Notification, User){
 
   $scope.data = {
     showDelete: false
@@ -15,10 +15,12 @@ angular.module('notepadApp').controller('NoteListController', function($scope, $
   };
 
   $scope.loadNotes = function(){
-    var userId = Variables.getUserId();
-    if(userId !== undefined){
-      $scope.notes = $resource('https://46.101.191.174:8443/' + userId + '/notes/').query();
-    }
+    var sessionToken = sessionStorage.getItem("token");
+    var userId = sessionStorage.getItem("userId");
+    $http.defaults.headers.common['x-access-token'] =  sessionToken;
+    var user = $User.get({ id: userId}, function () {
+      console.log(user)
+    })
   };
 
   $scope.toggleSideMenu = function(){
@@ -31,7 +33,6 @@ angular.module('notepadApp').controller('NoteListController', function($scope, $
 
   $scope.logout = function() {
     $ionicHistory.clearCache();
-    Variables.setUserId(-1);
     $state.go('login', {}, {reload: true});
   };
 
@@ -42,7 +43,7 @@ angular.module('notepadApp').controller('NoteListController', function($scope, $
     });
     confirmPopup.then(function(res) {
       if(res) {
-        var userId = Variables.getUserId();
+        // var userId = Variables.getUserId();
         var registerUrl = "https://46.101.191.174:8443" + "/unregister?userId=" + userId;
         $http({ method: 'POST', url: registerUrl }).success(function (response){
           $state.go('login');
